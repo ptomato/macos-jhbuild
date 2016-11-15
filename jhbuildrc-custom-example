@@ -1,0 +1,118 @@
+# -*- mode: python -*-
+
+# All of jhbuild is Python, so there are all sorts of interesting
+# things you can do to customize your build with python commands. This
+# file is treated like a python __init__ file, so you can do all sorts
+# of interesting things in it.
+
+# The URL for repositories can be overridden.
+
+# repos['git.gnome.org'] = 'https://github.com/GNOME/'
+
+# This is how you'd set your developer access to a git repo.
+
+# repos['git.gnome.org'] = 'ssh://username@git.gnome.org/git/'
+
+# Source and installation locations.
+
+_root = os.path.expanduser('~/gtk')
+checkoutroot = os.path.join(_root, 'source')
+prefix = os.path.join(_root, 'inst')
+
+# You can override tarballdir so that you need download tarballs only once for
+# multiple builds. This works just as you'd expect and can save quite
+# a bit of time if you're maintaining several trees.
+
+# tarballdir = os.path.join(os.path.expanduser('~'), 'Source', 'Download')
+
+# The moduleset can be overridden.
+
+# moduleset.insert(0, os.path.expanduser('/path/to/extra.modules'))
+# use_local_modulesets = True
+
+# As can the default modules to build.
+
+# modules = [
+#     'meta-gnome-extended-devel-platform',
+# ]
+
+# You can skip modules. These three are ones you might want to skip if you don't
+# need WebKit (building it takes hours) or e-d-s which requires WebKit.
+
+# skip.append('WebKit')
+# skip.append('libcurl')
+# skip.append('evolution-data-server')
+
+# You can also put skipped modules back:
+
+# if 'libglade' in skip:
+#   skip.remove('libglade')
+
+# Uncomment the following if you're running OSX 10.11 and SIP (see
+# https://developer.apple.com/library/prerelease/mac/documentation/Security/Conceptual/System_Integrity_Protection_Guide/RuntimeProtections/RuntimeProtections.html)
+# causes shell-script build failures. You'll also need to edit those
+# shell scripts to change the shebang from /bin/sh to $PREFIX/bin/bash.
+# Note that /usr/bin/env bash won't work, because it will also strip
+# the DYLD_* and LD_* environment variables!
+# Note as well that any installed dependencies must use their full
+# paths for their id (use install_name_tool -id to fix). Boost is a
+# particular violator of this rule.
+
+# modules.insert(0, 'bash')
+# if 'bash' in skip:
+#     skip.remove('bash')
+
+# .jhbuildrc has a master function, setup_sdk(target, sdk_version) which sets
+# up the build environment. You *must* call it in .jhbuildrc-custom.
+#
+# Target can be "10.9", "10.10", etc. It sets
+# MACOS_DEPLOYMENT_TARGET and the -mmacosx-version-min CFLAG.
+#
+# sdk_version can be any version from "10.9" or later, or "native". If you are
+# building for distribution, you probably want to use the lowest SDK
+# which will successfully build your modules.
+#
+# For default operation, set the architecture and SDK for the native machine:
+
+setup_sdk()
+# setup_sdk(target='10.10', sdk_version='10.10')
+
+setup_debug()
+# setup_release()
+
+# Modify the arguments passed to configure:
+
+# module_autogenargs['libcurl'] = '--enable-static'
+
+# or simply add to them:
+
+# append_autogenargs('gjs', '--without-dbus-tests --without-gtk')
+
+# Note that in either case the args will be added *after* the args in
+# the module's autogenargs attribute.
+
+# Tell Git to use a different module and branch (not tag!):
+
+# branches['gtk-engines'] = ('gtk-css-engine', 'bzr')
+
+# Or just switch branches
+
+# branches['gjs'] = (None, 'master')
+
+# Tarballs take a whole URL for branches:
+
+# branches['python'] = 'http://www.python.org/ftp/python/2.6.4/Python-2.6.4.tar.bz2'
+
+# Note that if the module has hash, md5sum, or size attributes and the
+# branch download doesn't match, jhbuild will error out. Open a shell,
+# untar the tarball yourself, quit the shell, and select "ignore
+# error". Don't try this with modules that need patches unless you're
+# sure that the updated version doesn't need them.
+#
+# Change an environment variable:
+
+# append_module_extra_env('gjs', 'CXXFLAGS', '-O0')
+
+# And more...
+
+disable_Werror = True

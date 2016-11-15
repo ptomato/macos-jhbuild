@@ -1,0 +1,95 @@
+--- a/configure.ac	2016-11-06 22:05:09.000000000 -0800
++++ b/configure.ac	2016-11-06 22:05:21.000000000 -0800
+@@ -1,7 +1,7 @@
+ AC_PREREQ(2.54)
+ AC_INIT([nss], [3.12])
+ 
+-AC_CONFIG_SRCDIR([mozilla/security/nss/Makefile])
++AC_CONFIG_SRCDIR([nss/Makefile])
+ 
+ NSPR_PREFIX=$(pkg-config nspr --variable=prefix)
+ AC_SUBST(NSPR_PREFIX)
+--- a/Makefile.in	2016-11-06 22:05:31.000000000 -0800
++++ b/Makefile.in	2016-11-06 22:06:15.000000000 -0800
+@@ -3,7 +3,7 @@
+ nspr_libdir=@NSPR_LIBDIR@
+ libdir=@libdir@
+ 
+-DISTDIR = $(CURDIR)/mozilla/dist
++DISTDIR = $(CURDIR)/dist
+ 
+ ARGS = \
+ 	MOZILLA_CLIENT=1 \
+@@ -11,6 +11,7 @@
+ 	NSPR_LIB_DIR=$(nspr_libdir) \
+ 	SOURCE_MD_DIR=$(DISTDIR) \
+ 	DIST=$(DISTDIR) \
++	prefix=$(prefix) \
+ 	BUILD_OPT=1 \
+ 	NS_USE_GCC=1 \
+ 	NSS_USE_SYSTEM_SQLITE=1 \
+@@ -18,27 +18,20 @@
+ 	NSS_ENABLE_ECC=1
+ 
+ all:
+-	$(MAKE) -C mozilla/security/nss \
+-		build_coreconf \
+-		build_dbm \
++	$(MAKE) -C nss \
+ 		all \
+ 		$(ARGS)
+ 
+ clean:
+-	$(MAKE) -C mozilla/security/nss clean
++	$(MAKE) -C nss clean
+ 
+ install:
+ 	install -d -m 755 $(DESTDIR)bin
+-	install -d -m 755 $(DESTDIR)$(libdir)/nss
++	install -d -m 755 $(DESTDIR)$(prefix)/lib/nss
+ 	install -d -m 755 $(DESTDIR)$(prefix)/include/nss
+-	install -d -m 755 $(DESTDIR)$(libdir)/pkgconfig
++	install -d -m 755 $(DESTDIR)$(prefix)/lib/pkgconfig
+ 
+-	install -m 644 -t $(DESTDIR)$(libdir) $(DISTDIR)/lib/*.so
+-	install -m 644 -t $(DESTDIR)$(libdir)/nss \
+-	  $(DISTDIR)/lib/libfreebl3.so \
+-	  $(DISTDIR)/lib/libsoftokn3.so \
+-	  $(DISTDIR)/lib/libnssdbm3.so \
+-	  $(DISTDIR)/lib/libnssckbi.so
+-	install -m 644 -t $(DESTDIR)$(prefix)/include/nss $(DISTDIR)/public/nss/*
+-	install -m 644 -t $(DESTDIR)$(libdir)/pkgconfig nss.pc 
++	install -m 644 $(DISTDIR)/lib/*.dylib $(DESTDIR)$(prefix)/lib
++	install -m 644 $(DISTDIR)/public/nss/* $(DESTDIR)$(prefix)/include/nss
++	install -m 644 nss.pc $(DESTDIR)$(prefix)/lib/pkgconfig
+ 
+--- a/nss/coreconf/Darwin.mk	2016-11-06 22:12:04.000000000 -0800
++++ b/nss/coreconf/Darwin.mk	2016-11-06 22:13:52.000000000 -0800
+@@ -108,7 +108,7 @@
+ # May override this with different compatibility and current version numbers.
+ DARWIN_DYLIB_VERSIONS = -compatibility_version 1 -current_version 1
+ # May override this with -bundle to create a loadable module.
+-DSO_LDOPTS	= -dynamiclib $(DARWIN_DYLIB_VERSIONS) -install_name @executable_path/$(notdir $@) -headerpad_max_install_names
++DSO_LDOPTS	= -dynamiclib $(DARWIN_DYLIB_VERSIONS) -install_name $(prefix)/lib/$(notdir $@) -headerpad_max_install_names
+ 
+ MKSHLIB		= $(CC) $(DSO_LDOPTS) $(DARWIN_SDK_SHLIBFLAGS)
+ DLL_SUFFIX	= dylib
+--- a/nss/lib/freebl/config.mk	2016-11-06 22:14:48.000000000 -0800
++++ b/nss/lib/freebl/config.mk	2016-11-06 22:15:25.000000000 -0800
+@@ -91,7 +91,7 @@
+ endif
+ 
+ ifeq ($(OS_ARCH), Darwin)
+-EXTRA_SHARED_LIBS += -dylib_file @executable_path/libplc4.dylib:$(DIST)/lib/libplc4.dylib -dylib_file @executable_path/libplds4.dylib:$(DIST)/lib/libplds4.dylib
++EXTRA_SHARED_LIBS += -dylib_file $(prefix)/lib/libplc4.dylib:$(DIST)/lib/libplc4.dylib -dylib_file $(prefix)/lib/libplds4.dylib:$(DIST)/lib/libplds4.dylib
+ endif
+ 
+ endif
+--- a/nss/cmd/shlibsign/Makefile	2016-11-06 23:03:31.000000000 -0800
++++ b/nss/cmd/shlibsign/Makefile	2016-11-06 23:03:40.000000000 -0800
+@@ -95,5 +95,3 @@
+     endif
+ endif
+ 
+-libs install :: $(CHECKLOC)
+-

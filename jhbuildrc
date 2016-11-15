@@ -1,0 +1,305 @@
+# -*- mode: python -*-
+#
+# Copyright (C) 2006, 2007, 2008 Imendio AB
+# Copyright 2009, 2010, 2011 John Ralls, Fremont, CA
+# Copyright 2016 Philip Chimento
+#
+# Default setup for building GTK+ on Mac OS X. Note that you should
+# normally never need to edit this file. Any custom settings should be
+# done in ~/.jhbuildrc-custom.
+
+import sys
+import re
+
+def _popen(cmd_arg):
+    from subprocess import Popen, PIPE
+    devnull = open('/dev/null')
+    cmd = Popen(cmd_arg, stdout=PIPE, stderr=devnull, shell=True)
+    retval = cmd.stdout.read().strip()
+    err = cmd.wait()
+    cmd.stdout.close()
+    devnull.close()
+    if err:
+        raise RuntimeError, 'Failed to close %s stream' % cmd_arg
+    return retval
+
+# Determine the native system:
+def osx_ver():
+    vstring = _popen('uname -r')
+    mstring = _popen('machine')
+    exp = re.compile(r'(\d+\.\d+)\.\d+')
+    vernum = exp.match(vstring)
+    return float(vernum.group(1)) - 4.0
+
+# Determine the XCode Version:
+def xcode_ver():
+   ver = _popen('xcodebuild -version')
+   exp = re.compile(r'Xcode (\d+\.\d+)')
+   vernum = exp.match(ver)
+   if vernum:
+       return float(vernum.group(1))
+   else:
+       return 3.0
+
+# Some utility functions used here and in custom files:
+
+def environ_append(key, value, separator=' '):
+    old_value = os.environ.get(key)
+    if old_value is not None:
+        value = old_value + separator + value
+    os.environ[key] = value
+
+def environ_prepend(key, value, separator=' '):
+    old_value = os.environ.get(key)
+    if old_value is not None:
+        value = value + separator + old_value
+    os.environ[key] = value
+
+def environ_remove(key, value, separator=':'):
+    old_value = os.environ.get(key)
+    if old_value is not None:
+        old_value_split = old_value.split(separator)
+        value_split = [x for x in old_value_split if x != value]
+        value = separator.join(value_split)
+    os.environ[key] = value
+
+def append_module_extra_env(module, var, value, separator=' '):
+    extra_env = module_extra_env.get(module, {})
+    old_value = extra_env.get(var, os.environ[var])
+    new_value = old_value + separator + value
+    extra_env[var] = new_value
+    module_extra_env[module] = extra_env
+
+def append_autogenargs(module, args):
+    old_value = module_autogenargs.get(module, autogenargs)
+    module_autogenargs[module] = old_value + ' ' + args
+
+def remove_autogenargs(module, args):
+    arg_string = module_autogenargs.get(module, autogenargs)
+    module_autogenargs[module] = arg_string.replace(args, '')
+
+# Call either setup_debug or setup_release in your .jhbuildrc-custom
+# or other customization file to get the compilation flags.
+def setup_debug():
+    environ_prepend('CFLAGS', '-O0 -g')
+    environ_prepend('CXXFLAGS', '-O0 -g')
+    environ_prepend('OBJCFLAGS', '-O0 -g')
+
+def setup_release():
+    environ_prepend('CFLAGS', '-O2')
+    environ_prepend('CXXFLAGS', '-O2')
+    environ_prepend('OBJCFLAGS', '-O2')
+
+def make_sdk_name(sdk_version):
+    return 'MacOSX' + sdk_version + '.sdk'
+
+def get_sdkdir(sdk_name, xcodepath, xcodeversion):
+    platformpath = None
+    if xcodeversion >= 4.3:
+        platformpath = os.path.join('Platforms', 'MacOSX.platform', 'Developer')
+    if xcodepath and platformpath:
+        sdkdir = os.path.join(xcodepath, platformpath, 'SDKs', sdk_name)
+    elif xcodepath:
+        sdkdir = os.path.join(xcodepath, 'SDKs', sdk_name)
+    else:
+        sdkdir = os.path.join('/Developer', 'SDKs', sdk_name)
+
+    if not os.path.exists(sdkdir):
+        sdkdir = ''
+        if 'SDKPATH' in os.environ:
+            try:
+                sdkdir = [os.path.join(path, sdk_name) for path
+                          in os.environ['SDKPATH'].split(':')
+                          if os.path.exists(os.path.join(path, sdk_name))][0]
+            except IndexError:
+                pass
+        if not sdkdir:
+            raise EnvironmentError('%s not found' % sdk_name)
+    return sdkdir
+
+# Set up the environment for building against particular SDK.
+# This is the workhorse of the setup. Call this function with the
+# target OSX version (10.9, 10.10, 10.11, etc.), and the sdk version you want
+# to use (10.9, 10.10, 10.11, etc.).
+def setup_sdk(target=None, sdk_version='native'):
+    xcodeversion = xcode_ver()
+    osx_version = osx_ver()
+
+    if target is None:
+        target = '10.%d' % osx_version
+    # OSX 10.9 doesn't have /usr/include, so we need to set the sdkdir to XCode.app:
+    if sdk_version == 'native':
+        sdk_version = '10.%d' % osx_version
+
+    os.environ['MACOSX_DEPLOYMENT_TARGET'] = target
+
+    # Note: You can use $DEVELOPER_DIR to override the default set with
+    # xcode-select.
+    xcodepath = _popen('xcode-select -print-path')
+    if os.environ.has_key('DEVELOPER_DIR'):
+        xcodepath = os.environ['DEVELOPER_DIR']
+
+    toolpath = os.path.join('/usr', 'bin')
+    if xcodepath:
+        toolpath = os.path.join(xcodepath, 'usr', 'bin')
+
+    sdkdir = get_sdkdir(make_sdk_name(sdk_version), xcodepath, xcodeversion)
+    sdk_includedir = os.path.join(sdkdir, 'usr', 'include')
+    # Seems like we need this since many libraries otherwise only look for
+    # various dependencies (e.g. libiconv) in /usr/lib, hence pulling in
+    # the wrong -L
+    environ_prepend('LDFLAGS', '-L' + sdkdir + '/usr/lib')
+    environ_prepend('CFLAGS', '-I' + sdk_includedir)
+    environ_prepend('CXXFLAGS', '-I' + sdk_includedir)
+    environ_prepend('OBJCFLAGS', '-I' + sdk_includedir)
+    environ_prepend('CPPFLAGS', '-I' + sdk_includedir)
+    environ_prepend('CMAKE_PREFIX_PATH', os.path.join(sdkdir, 'usr'), ':')
+    environ_prepend('LIBRARY_PATH', sdkdir + '/usr/lib', ':')
+
+    # It's often necessary to look for things in the SDK when
+    # developing, and it takes a lot of typing, so define a
+    # convenience environment variable:
+    environ_append('SDKDIR', sdkdir)
+    environ_append('SDKROOT', sdkdir)
+
+    # Apple Documentation says that "-syslibroot" is the arg to pass to the
+    # linker, but we are using the compiler to control the linker, and
+    # everything seems to be working correctly.
+    environ_append('CFLAGS', '-isysroot ' + sdkdir)
+    environ_append('CPPFLAGS', '-isysroot ' + sdkdir)
+    environ_append('CXXFLAGS', '-isysroot ' + sdkdir)
+    environ_append('OBJCFLAGS', '-isysroot ' + sdkdir)
+    environ_append('LDFLAGS', '-isysroot ' + sdkdir)
+
+    environ_append('CFLAGS', '-mmacosx-version-min=' + target)
+    environ_append('CXXFLAGS', '-mmacosx-version-min=' + target)
+    environ_append('OBJCFLAGS', '-mmacosx-version-min=' + target)
+    environ_append('LDFLAGS', '-mmacosx-version-min=' + target)
+
+    # Note that the following will use Clang
+    os.environ['CC'] = os.path.join(toolpath, 'gcc')
+    os.environ['OBJC'] = os.path.join(toolpath, 'gcc')
+    os.environ['CXX'] = os.path.join(toolpath, 'g++')
+    os.environ['LD'] = os.path.join(toolpath, 'ld')
+
+    # El Capitan needs bash to work around SIP. If you're using a
+    # common bootstrap directory (e.g. $HOME/.local) then override
+    # CONFIG_SHELL in .jhbuildrc-custom after calling setup_sdk().
+    config_shell = os.path.join(prefix, 'bin', 'bash')
+    if osx_version < 11.0:
+        skip.append('bash')
+        skip.append('openssl')  # openssl removed in El Capitan
+    elif os.path.exists(config_shell):
+        os.environ['CONFIG_SHELL'] = config_shell
+
+    # macOS ships libuuid, but no pkg-config file. Symbols are in libSystem, per
+    # http://lists.apple.com/archives/unix-porting/2009/Aug/msg00006.html
+    skip.append('libuuid')
+    os.environ['UUID_CFLAGS'] = '-I' + os.path.join(sdk_includedir, 'uuid')
+    os.environ['UUID_LIBS'] = '-lSystem'
+
+    return sdkdir
+
+###### End Function Definitions  #######
+
+##### The following configuration can be overridden in custom files ######
+
+# Check and warn if jhbuild is started from within jhbuild, since that
+# will mess up environment variables, especially if different build
+# setups are used.
+if os.environ.get('JHBUILD_PREFIX', '') != '':
+    print 'Warning: jhbuild is started from within a jhbuild session.'
+
+# Moduleset to use. You can override this in .jhbuildrc-custom or on
+# the command line.
+moduleset = [
+    'gnome-apps-3.22',
+    'macos-sysdeps',
+    'macos-overrides',
+]
+
+# A list of the modules to build. You can override this in
+# .jhbuildrc-custom or on the command line.
+modules = [ 'meta-gnome-extended-devel-platform' ]
+
+# Use the included install-check program if available. It won't update
+# timestamps if the header hasn't changed, which speeds up builds.
+_path = os.path.expanduser('~/.local/bin/install-check')
+if os.path.exists(_path):
+    os.environ['INSTALL'] = _path
+
+conditions.add('64-bit')
+
+# Modules that have new enough versions shipped with macOS >= 10.9
+skip.append('m4')
+
+# The option "headerpad_max_install_names" is there to leave some room for
+# changing the library locations with install_name_tool. Note that GNU
+# libtool seems to drop the option if we don't use -W here.
+environ_append('LDFLAGS', '-Wl,-headerpad_max_install_names')
+# Make sure we don't link against XQuartz whose freetype-config is on PATH
+# when XQuartz is installed by removing it from PATH
+environ_remove('PATH', '/opt/X11/bin')
+
+# Glib has issues with endianness
+append_autogenargs('glib', 'ac_cv_c_bigendian=no')
+# Set glib's build parameter so that it builds the
+# correct atomic asm functions
+append_autogenargs('glib', '--build=x86_64-apple-darwin')
+append_autogenargs('gmp', '--host=x86_64-apple-darwin ABI=64')
+append_autogenargs('gnutls', '--host=x86_64-apple-darwin')
+# Need to override the global autogenargs for libnettle, since otherwise
+# --disable-static will be added after it
+module_autogenargs['libnettle'] = '--enable-static'
+# https://bugs.freedesktop.org/show_bug.cgi?id=98603
+branches['pulseaudio'] = (None, 'next')
+
+###### Import Customizations ######
+
+# Import optional user RC for further customization. You can override
+# the prefix or default build setup for example, or CFLAGS or
+# module_autogenargs, etc.
+#
+_userrc = os.path.join(os.environ['HOME'], '.jhbuildrc-custom')
+if os.path.exists(_userrc):
+    execfile(_userrc)
+
+###### Everything Below Uses (and Overrides) customizations! #######
+
+# Any changes to packages that affect environment variables, or make use of the
+# "prefix", "checkoutroot", or "tarballdir" variables, must occur below here.
+
+os.environ['JHBUILD_PREFIX'] = prefix
+os.environ['JHBUILD_SOURCE'] = checkoutroot
+
+_libdir = os.path.join(prefix, 'lib')
+
+# Make sure we find our installed modules before other versions.
+environ_prepend('LDFLAGS', '-L' + _libdir)
+environ_prepend('CPPFLAGS', '-I' + prefix + '/include')
+
+# Some autogens detect that it's a Mac and use glibtoolize if it's
+# available. Override this behavior.
+os.environ.setdefault('LIBTOOLIZE', os.path.join(prefix, 'bin', 'libtoolize'))
+
+# Make sure that ltdl can find our libraries
+addpath('LTDL_LIBRARY_PATH', _libdir)
+
+# Not sure why this is not autodetected
+append_module_extra_env('glade', 'CFLAGS', '-ObjC')
+
+# openssl doesn't understand DESTDIR, but luckily it has its own mechanism.
+module_extra_env['openssl'] = {
+    'INSTALL_PREFIX': os.path.join(prefix, '_jhbuild', 'root-openssl'),
+}
+
+# This is how to get cmake to set -install_name
+cmakeargs += ' -DCMAKE_INSTALL_NAME_DIR=' + _libdir
+
+# Overcome Python's obnoxious misconfiguration of portable builds
+os.environ['BUILDCFLAGS'] = os.environ['CFLAGS']
+# Finally when building normally we need to force CFLAGS_FOR_BUILD
+# to our current CFLAGS so that everything will link with other
+# build products. Note that this will generally break
+# cross-compilation, not that it works anyway.
+os.environ['CFLAGS_FOR_BUILD'] = os.environ['CFLAGS']

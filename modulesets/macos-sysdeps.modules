@@ -1,0 +1,503 @@
+<?xml version="1.0"?>
+<!DOCTYPE moduleset SYSTEM "moduleset.dtd">
+<?xml-stylesheet type="text/xsl" href="moduleset.xsl"?>
+<moduleset>
+
+  <repository name="cairographics" type="tarball"
+              href="http://cairographics.org/releases/"/>
+  <repository name="curl.haxx.se" type="tarball"
+              href="http://curl.haxx.se/download/"/>
+  <repository name="enchant" type="tarball"
+              href="http://www.abisource.com/downloads/enchant/"/>
+  <repository name="freedesktop" type="tarball"
+              href="https://www.freedesktop.org/software/"/>
+  <repository name="ftp.gnu.org" type="tarball" href="ftp://ftp.gnu.org/gnu/"/>
+  <repository name="github" type="tarball" href="https://github.com/"/>
+  <repository name="gnupg" type="tarball" href="ftp://ftp.gnupg.org/gcrypt/"/>
+  <repository name="hadess" type="tarball"
+              href="http://freedesktop.org/~hadess/"/>
+  <repository name="icu" type="tarball"
+              href="http://download.icu-project.org/files/"/>
+  <repository name="itstool" type="tarball"
+              href="http://files.itstool.org/itstool/"/>
+  <repository name="json" type="tarball"
+              href="https://s3.amazonaws.com/json-c_releases/releases/"/>
+  <repository name="libarchive" type="tarball"
+              href="http://www.libarchive.org/downloads/"/>
+  <repository name="libssh2" type="tarball"
+              href="https://www.libssh2.org/download/"/>
+  <repository name="libtiff" type="tarball" href="http://download.osgeo.org/"/>
+  <repository name="mozilla" type="tarball" href="http://ftp.mozilla.org/pub/"/>
+  <repository name="openssl" type="tarball"
+              href="https://www.openssl.org/source/"/>
+  <repository name="oracle" type="tarball" href="http://download.oracle.com/"/>
+  <repository name="p11-glue" type="tarball"
+              href="http://p11-glue.freedesktop.org/releases/"/>
+  <repository name="python" type="tarball"
+              href="https://www.python.org/ftp/python/"/>
+  <repository name="pyyaml" type="tarball" href="http://pyyaml.org/download/"/>
+  <repository name="ragel" type="tarball"
+              href="http://www.colm.net/files/ragel/"/>
+  <repository name="sndfile" type="tarball"
+              href="http://www.mega-nerd.com/libsndfile/files/"/>
+  <repository name="sourceforge" type="tarball"
+              href="http://downloads.sourceforge.net/sourceforge/"/>
+  <repository name="taglib" type="tarball" href="http://taglib.org/releases/"/>
+  <repository name="wavpack" type="tarball" href="http://www.wavpack.com/"/>
+  <repository name="webm" type="tarball"
+              href="http://downloads.webmproject.org/releases/"/>
+  <repository name="xiph" type="tarball"
+              href="http://downloads.xiph.org/releases/"/>
+
+  <autotools id="bash" autogen-sh="configure"
+             autogenargs="--with-installed-readline">
+    <branch repo="ftp.gnu.org" module="bash/bash-4.3.30.tar.gz"
+            version="4.3.30"/>
+    <dependencies>
+      <dep package="readline"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="cairo"  autogen-sh="configure"
+             autogenargs="--enable-pdf --enable-quartz --disable-xlib --without-x">
+    <pkg-config>cairo.pc</pkg-config>
+    <branch repo="cairographics" module="cairo-1.14.6.tar.xz"  version="1.14.6"
+            hash="sha1:0a59324e6cbe031b5b898ff8b9e2ffceb9d114f5">
+    </branch>
+    <dependencies>
+      <dep package="pixman"/>
+      <dep package="fontconfig"/>
+      <dep package="freetype2"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="dbus-glib" autogen-sh="configure"
+             autogenargs="--disable-selinux">
+    <branch repo="freedesktop"
+            module="dbus/releases/dbus-glib/dbus-glib-0.100.tar.gz"
+            version="0.100"/>
+    <dependencies>
+      <dep package="dbus"/>
+      <dep package="glib"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="desktop-file-utils" autogen-sh="configure">
+    <branch repo="freedesktop"
+            module="desktop-file-utils/releases/desktop-file-utils-0.23.tar.xz"
+            version="0.23"/>
+  </autotools>
+
+  <autotools id="enchant" autogen-sh="configure"
+             autogenargs="--with-myspell-dir=/Library/Dictionaries">
+    <pkg-config>enchant.pc</pkg-config>
+    <branch repo="enchant" module="1.6.0/enchant-1.6.0.tar.gz" version="1.6.0">
+      <patch file="https://git.gnome.org/browse/gtk-osx/plain/patches/enchant-gsize.patch" strip="1"/>
+      <patch file="https://git.gnome.org/browse/gtk-osx/plain/patches/enchant-env.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="glib"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="flac" autogen-sh="configure" supports-non-srcdir-builds="no">
+    <pkg-config>flac.pc</pkg-config>
+    <branch repo="xiph" module="flac/flac-1.3.1.tar.xz" version="1.3.1"
+            hash="sha256:4773c0099dba767d963fd92143263be338c48702172e8754b9bc5103efe1c56c"/>
+    <dependencies>
+      <dep package="ogg"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="fontconfig" autogen-sh="configure"
+             autogenargs="--disable-docs">
+    <pkg-config>fontconfig.pc</pkg-config>
+    <branch repo="freedesktop"
+            module="fontconfig/release/fontconfig-2.11.1.tar.bz2"
+            version="2.11.1"/>
+    <dependencies>
+      <dep package="freetype2"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="freetype2" autogen-sh="configure" skip-autogen="never"
+             autogenargs="--without-bzip2">
+    <pkg-config>freetype2.pc</pkg-config>
+    <branch repo="sourceforge" module="freetype/freetype-2.5.3.tar.gz"
+            version="2.5.3"/>
+    <dependencies>
+      <dep package="harfbuzz-tarball"/>
+      <dep package="zlib"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="freetype-no-harfbuzz" autogen-sh="configure"
+             skip-autogen="never"
+             autogenargs="--without-bzip2 --without-harfbuzz">
+    <branch repo="sourceforge" module="freetype/freetype-2.5.3.tar.gz"
+            version="2.5.3"/>
+    <dependencies>
+      <dep package="zlib"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="gmp" autogen-sh="configure">
+    <branch repo="ftp.gnu.org" module="gmp/gmp-4.3.2.tar.bz2" version="4.3.2">
+      <patch file="https://git.gnome.org/browse/gtk-osx/plain/patches/gmp-cc-for-build-needs-cflags.patch" strip="1"/>
+      <patch file="https://git.gnome.org/browse/gtk-osx/plain/patches/gmp-4.3.2-stddef.patch" strip="1"/>
+    </branch>
+  </autotools>
+
+  <!-- Building with p11-kit support breaks g-ir-scanner, for some weird reason. -->
+  <autotools id="gnutls" autogen-sh="configure"
+             autogenargs="--disable-gtk-doc-html --without-p11-kit --disable-guile">
+    <pkg-config>gnutls.pc</pkg-config>
+    <branch repo="gnupg" version="3.3.12"
+            module="gnutls/v3.3/gnutls-3.3.12.tar.xz"/>
+    <dependencies>
+      <dep package="libnettle"/>
+      <dep package="libtasn1"/>
+      <dep package="zlib"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="harfbuzz-tarball" autogen-sh="configure"
+             autogenargs="--with-coretext --with-freetype --with-icu">
+    <branch repo="freedesktop" module="harfbuzz/release/harfbuzz-0.9.40.tar.bz2"
+            version="0.9.40">
+       <patch file="https://git.gnome.org/browse/gtk-osx/plain/patches/harfbuzz-kCTTypesetterOptionForcedEmbeddingLevel-Leopard.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="c++"/>
+      <dep package="freetype-no-harfbuzz"/>
+      <dep package="glib"/>
+      <dep package="libicu"/>
+      <dep package="ragel"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="hyphen" autogen-sh="configure">
+    <branch repo="sourceforge" module="hunspell/hyphen-2.8.8.tar.gz"
+            version="2.8.8">
+      <!-- https://github.com/hunspell/hyphen/pull/12 -->
+      <patch file="hyphen-12-awk-gensub.patch" strip="1"/>
+    </branch>
+  </autotools>
+
+  <autotools id="itstool">
+    <branch repo="itstool" module="itstool-2.0.2.tar.bz2" version="2.0.2"
+            hash="sha256:bf909fb59b11a646681a8534d5700fec99be83bb2c57badf8c1844512227033a"/>
+    <dependencies>
+      <dep package="libxml2"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="js24" autogen-sh="configure"
+             autogenargs="--with-system-nspr --with-system-zlib --enable-system-ffi --enable-threadsafe">
+    <pkg-config>mozjs-24.pc</pkg-config>
+    <branch repo="mozilla" module="js/mozjs-24.2.0.tar.bz2" version="24.2.0"
+            checkoutdir="js24-24.2.0" source-subdir="js/src"
+            hash="sha1:ce779081cc11bd0c871c6f303fc4a0091cf4fe66">
+      <patch file="js24-install-name.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="libffi"/>
+      <dep package="nspr"/>
+    </dependencies>
+    <after>
+      <dep package="python2"/>
+      <dep package="zlib"/>
+    </after>
+  </autotools>
+
+  <autotools id="json" autogen-sh="configure">
+    <pkg-config>json-c.pc</pkg-config>
+    <branch repo="json" module="json-c-0.12.1-nodoc.tar.gz" version="0.12.1"
+            hash="sha256:5a617da9aade997938197ef0f8aabd7f97b670c216dc173977e1d56eef9e1291"
+            checkoutdir="json-c-0.12.1"/>
+  </autotools>
+
+  <autotools id="libarchive" autogen-sh="configure">
+    <pkg-config>libarchive.pc</pkg-config>
+    <branch repo="libarchive" module="libarchive-3.2.2.tar.gz" version="3.2.2"/>
+    <suggests>
+      <dep package="zlib"/>
+      <dep package="libnettle"/>
+    </suggests>
+  </autotools>
+
+  <!-- The version shipped with macOS doesn't provide a pkgconfig file.
+  Otherwise can be skipped. -->
+  <autotools id="libcurl" autogen-sh="configure">
+    <branch repo="curl.haxx.se" module="curl-7.47.1.tar.bz2" version="7.47.1"/>
+  </autotools>
+
+  <!-- The version shipped with macOS is extremely old. -->
+  <autotools id="libdb" autogen-sh="configure"
+             autogen-template="%(srcdir)s/dist/%(autogen-sh)s --prefix %(prefix)s %(autogenargs)s">
+    <branch repo="oracle" module="berkeley-db/db-4.8.30.NC.tar.gz"
+            version="4.8.30">
+      <patch file="https://github.com/narkoleptik/os-x-berkeleydb-patch/raw/master/atomic.patch" strip='1'/>
+    </branch>
+  </autotools>
+
+  <autotools id="libepoxy" autogen-sh="configure">
+    <pkg-config>epoxy.pc</pkg-config>
+    <branch repo="github"
+            module="anholt/libepoxy/releases/download/v1.3.1/libepoxy-1.3.1.tar.bz2"
+            version="1.3.1"/>
+    <dependencies>
+      <dep package="xorg-macros"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="libgcrypt" autogen-sh="configure"
+             autogenargs="--disable-asm --disable-doc"
+             autogen-template="%(srcdir)s/%(autogen-sh)s &amp;&amp; %(srcdir)s/configure --prefix %(prefix)s  %(autogenargs)s">
+    <branch repo="gnupg" module="libgcrypt/libgcrypt-1.6.3.tar.bz2"
+            version="1.6.3">
+      <patch file="https://git.gnome.org/browse/gtk-osx/plain/patches/libgcrypt-cflags-for-cc-for-build.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="libgpg-error"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="libgpg-error" autogen-sh="configure"
+             autogenargs="--disable-doc">
+    <branch repo="gnupg" module="libgpg-error/libgpg-error-1.17.tar.bz2"
+            version="1.17">
+      <patch file="https://git.gnome.org/browse/gtk-osx/plain/patches/libgpg-error-cflags-for-cc-for-build.patch" strip="1"/>
+    </branch>
+  </autotools>
+
+  <cmake id="libical">
+    <pkg-config>libical.pc</pkg-config>
+    <branch repo="github"
+            module="libical/libical/releases/download/v2.0.0/libical-2.0.0.tar.gz"
+            version="2.0.0"/>
+    <dependencies>
+      <dep package="libicu"/>
+    </dependencies>
+  </cmake>
+
+  <autotools id="libicu" autogen-sh="source/configure"
+             autogenargs="--enable-rpath">
+    <pkg-config>icu-i18n.pc</pkg-config>
+    <branch repo="icu" module="icu4c/55.1/icu4c-55_1-src.tgz" version="55.1"
+            checkoutdir="icu"/>
+  </autotools>
+
+  <!-- Rudely demands TeX to build documentation -->
+  <!-- Assembler files are missing md5-compress.asm for x86_64 -->
+  <autotools id="libnettle" autogen-sh="configure"
+             autogenargs="--disable-documentation --disable-assembler --enable-static">
+    <!-- gnutls 3.3.x does not support nettle 3.0 -->
+    <branch repo="ftp.gnu.org" module="nettle/nettle-2.7.1.tar.gz"
+            version="2.7.1">
+      <patch file="https://git.gnome.org/browse/gtk-osx/plain/patches/libnettle-cc-for-build-needs-cflags.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="gmp"/>
+      <dep package="openssl"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="liboauth" autogen-sh="configure">
+    <pkg-config>oauth.pc</pkg-config>
+    <branch repo="sourceforge" module="liboauth/liboauth-1.0.3.tar.gz"
+            version="1.0.3"/>
+    <dependencies>
+      <dep package="openssl"/>
+      <dep package="libcurl"/>
+    </dependencies>
+  </autotools>
+
+  <cmake id="libproxy" cmakeargs="-DWITH_PYTHON=OFF -DBUILD_TESTING=OFF">
+    <branch repo="github"
+            module="libproxy/libproxy/archive/0.4.13.tar.gz"
+            version="0.4.13" checkoutdir="libproxy-0.4.13"/>
+  </cmake>
+
+  <autotools id="libsndfile" autogen-sh="configure">
+    <pkg-config>sndfile.pc</pkg-config>
+    <branch repo="sndfile" module="libsndfile-1.0.27.tar.gz" version="1.0.27"/>
+    <dependencies>
+      <dep package="flac"/>
+      <dep package="ogg"/>
+      <dep package="speex"/>
+      <dep package="libvorbis"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="libspeex" autogen-sh="configure"
+             autogenargs="--disable-binaries">
+    <pkg-config>speex.pc</pkg-config>
+    <branch repo="xiph" module="speex/speex-1.2rc2.tar.gz" version="1.2rc2"/>
+  </autotools>
+
+  <autotools id="libssh2" autogen-sh="configure" autogenargs="--disable-examples-build">
+    <pkg-config>libssh2.pc</pkg-config>
+    <branch repo="libssh2" module="libssh2-1.8.0.tar.gz" version="1.8.0"/>
+    <dependencies>
+      <dep package="openssl"/>
+      <dep package="zlib"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="libtiff" autogen-sh="configure" autogenargs="--without-x">
+    <branch repo="libtiff" module="libtiff/tiff-4.0.6.tar.gz" version="4.0.6"/>
+    <dependencies>
+      <dep package="libjpeg"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="libvorbis" autogen-sh="configure">
+    <pkg-config>vorbis.pc</pkg-config>
+    <branch repo="xiph" module="vorbis/libvorbis-1.3.5.tar.xz" version="1.3.5"
+            hash="sha256:54f94a9527ff0a88477be0a71c0bab09a4c3febe0ed878b24824906cd4b0e1d1"/>
+    <dependencies>
+      <dep package="ogg"/>
+    </dependencies>
+  </autotools>
+
+  <!-- errors out on unknown configure args -->
+  <autotools id="libvpx"
+             autogen-template="%(srcdir)s/configure --prefix=%(prefix)s">
+    <pkg-config>vpx.pc</pkg-config>
+    <branch repo="webm" module="webm/libvpx-1.6.0.tar.bz2" version="1.6.0"/>
+  </autotools>
+
+  <autotools id="libwebp" autogen-sh="configure">
+    <branch repo="webm" module="webp/libwebp-0.4.3.tar.gz" version="0.4.3"/>
+  </autotools>
+
+  <autotools id="libyaml" autogen-sh="configure">
+    <branch repo="pyyaml" module="libyaml/yaml-0.1.7.tar.gz" version="0.1.7"/>
+  </autotools>
+
+  <autotools id="nspr" autogen-sh="nspr/configure"
+             autogenargs="--enable-64bit --disable-debug --enable-optimize"
+             check-target="false">
+    <pkg-config>nspr.pc</pkg-config>
+    <branch repo="mozilla" module="nspr/releases/v4.13.1/src/nspr-4.13.1.tar.gz"
+            version="4.13.1"
+            hash="sha256:5e4c1751339a76e7c772c0c04747488d7f8c98980b434dc846977e43117833ab">
+      <patch file="nspr.autogen.patch" strip="1"/>
+      <patch file="nspr-install-name.patch" strip="1"/>
+    </branch>
+  </autotools>
+
+  <autotools id="nss" autogen-sh="autogen.sh" supports-non-srcdir-builds="no"
+             makeargs="-j1">
+    <branch repo="mozilla"
+            module="security/nss/releases/NSS_3_27_1_RTM/src/nss-3.27.1.tar.gz"
+            version="3.27.1"
+            hash="sha256:fd3637a1930cd838239a89633a7ed9a18859ae9b599043f3a18f726dc4ec2a6b">
+      <patch file="nss.pkgconfig-and-configure.patch" strip="1"/>
+      <!-- Get rid of broken install_name, don't sign binaries which is also
+      broken -->
+      <patch file="nss-various-fixes.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="nspr"/>
+      <dep package="sqlite3"/>
+      <dep package="zlib"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="ogg" autogen-sh="configure">
+    <pkg-config>ogg.pc</pkg-config>
+    <branch repo="xiph" module="ogg/libogg-1.3.2.tar.xz" version="1.3.2"
+            hash="sha256:3f687ccdd5ac8b52d76328fbbfebc70c459a40ea891dbf3dccb74a210826e79b"/>
+  </autotools>
+
+  <!-- of the many arguments such as prefix and libdir that jhbuild might pass
+  to configure, openssl only understands prefix, and only with =. Sadly we
+  cannot pass things in through %(autogenargs)s, as disable-Werror will be
+  prepended to them. -->
+  <autotools id="openssl" autogen-sh="Configure"
+             autogen-template="%(srcdir)s/%(autogen-sh)s --prefix=%(prefix)s --openssldir=%(prefix)s/etc/ssl shared darwin64-x86_64-cc"
+             makeinstallargs="install_sw" supports-non-srcdir-builds="no">
+    <pkg-config>libcrypto.pc</pkg-config>
+    <branch module="openssl-1.0.2f.tar.gz" version="1.0.2f" repo="openssl"
+            hash="sha256:932b4ee4def2b434f85435d9e3e19ca8ba99ce9a065a61524b429a9d5e9b2e9c"/>
+  </autotools>
+
+  <autotools id="p11-kit" autogen-sh="configure"
+             autogenargs="--without-trust-paths">
+    <pkg-config>p11-kit-1.pc</pkg-config>
+    <branch repo="p11-glue" module="p11-kit-0.22.1.tar.gz" version="0.22.1">
+      <patch file="https://git.gnome.org/browse/gtk-osx/plain/patches/p11-kit-dirfd.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="libtasn1"/>
+    </dependencies>
+  </autotools>
+
+  <waf id="py3cairo" python-command="python3">
+    <pkg-config>py3cairo.pc</pkg-config>
+    <branch repo="cairographics" module="pycairo-1.10.0.tar.bz2"
+            version="1.10.0"
+            hash="sha1:b4283aa1cc9aafd12fd72ad371303a486da1d014"/>
+    <dependencies>
+      <dep package="cairo"/>
+      <dep package="python3-devel"/>
+    </dependencies>
+  </waf>
+
+  <autotools id="python3-devel" autogen-sh="configure"
+             autogenargs="--enable-shared">
+    <pkg-config>python3.pc</pkg-config>
+    <!-- version 3.5 because that's what python's pkg-config file reports -->
+    <branch repo="python" module="3.5.2/Python-3.5.2.tar.xz" version="3.5"
+            hash="md5:8906efbacfcdc7c3c9198aeefafd159e" size="15222676">
+      <!-- Required because -stack_size should not be passed to the linker when
+      building shared libraries. FIXME: Does not work. -->
+      <patch file="https://git.gnome.org/browse/gtk-osx/plain/patches/Python3.4-stack_size-flag.patch" strip="1"/>
+    </branch>
+  </autotools>
+
+  <autotools id="ragel" autogen-sh="autoreconf">
+    <branch repo="ragel" module="ragel-6.9.tar.gz" version="6.9">
+      <patch file="https://git.gnome.org/browse/gtk-osx/plain/patches/ragel-6.9-setiosflags.patch" strip="1"/>
+    </branch>
+  </autotools>
+
+  <autotools id="shared-mime-info" autogen-sh="configure" makeargs="-j1"
+             supports-non-srcdir-builds="no">
+    <pkg-config>shared-mime-info.pc</pkg-config>
+    <branch repo="hadess" module="shared-mime-info-1.3.tar.xz" version="1.3"/>
+    <dependencies>
+      <dep package="glib"/>
+      <dep package="libxml2"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="speex" autogen-sh="configure" autogenargs="--disable-binaries">
+    <pkg-config>speexdsp.pc</pkg-config>
+    <branch repo="xiph" module="speex/speexdsp-1.2rc3.tar.gz" version="1.2rc3"/>
+    <dependencies>
+      <dep package="libspeex"/>
+    </dependencies>
+  </autotools>
+
+  <cmake id="taglib">
+    <pkg-config>taglib.pc</pkg-config>
+    <branch repo="taglib" module="taglib-1.11.1.tar.gz" version="1.11.1"/>
+  </cmake>
+
+  <autotools id="wavpack" autogen-sh="configure" autogenargs="--disable-apps">
+    <pkg-config>wavpack.pc</pkg-config>
+    <branch repo="wavpack" module="wavpack-4.80.0.tar.bz2" version="4.80.0"/>
+  </autotools>
+
+  <autotools id="zlib" autogen-sh="configure" supports-non-srcdir-builds="no"
+             autogen-template="%(srcdir)s/%(autogen-sh)s --prefix %(prefix)s">
+    <!-- doesn't handle disable-Werror, so have to cut out autogenargs -->
+    <pkg-config>zlib.pc</pkg-config>
+    <branch repo="sourceforge" module="libpng/zlib-1.2.8.tar.gz"
+            version="1.2.8"/>
+  </autotools>
+
+</moduleset>

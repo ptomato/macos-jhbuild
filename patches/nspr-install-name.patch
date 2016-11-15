@@ -1,0 +1,22 @@
+--- a/nspr/configure.in	2016-11-06 22:37:43.000000000 -0800
++++ b/nspr/configure.in	2016-11-06 22:37:49.000000000 -0800
+@@ -1371,7 +1371,7 @@
+     fi
+     AC_CHECK_HEADER(crt_externs.h, AC_DEFINE(HAVE_CRT_EXTERNS_H))
+     DSO_CFLAGS=-fPIC
+-    DSO_LDOPTS='-dynamiclib -compatibility_version 1 -current_version 1 -all_load -install_name @executable_path/$@ -headerpad_max_install_names'
++    DSO_LDOPTS='-dynamiclib -compatibility_version 1 -current_version 1 -all_load -install_name $(libdir)/$@ -headerpad_max_install_names'
+     _OPTIMIZE_FLAGS=-O2
+     MKSHLIB='$(CC) $(DSO_LDOPTS) -o $@'
+     STRIP="$STRIP -x -S"
+--- a/nspr/configure	2016-11-06 22:42:22.000000000 -0800
++++ b/nspr/configure	2016-11-06 22:42:38.000000000 -0800
+@@ -6552,7 +6552,7 @@
+ 
+ 
+     DSO_CFLAGS=-fPIC
+-    DSO_LDOPTS='-dynamiclib -compatibility_version 1 -current_version 1 -all_load -install_name @executable_path/$@ -headerpad_max_install_names'
++    DSO_LDOPTS='-dynamiclib -compatibility_version 1 -current_version 1 -all_load -install_name $(libdir)/$@ -headerpad_max_install_names'
+     _OPTIMIZE_FLAGS=-O2
+     MKSHLIB='$(CC) $(DSO_LDOPTS) -o $@'
+     STRIP="$STRIP -x -S"
