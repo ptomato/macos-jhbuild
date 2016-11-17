@@ -23,11 +23,11 @@ if test ! -d $SOURCE; then
     do_exit "The directory $SOURCE does not exist, please create it and try again."
 fi
 
-echo "Checking out jhbuild wip/ptomato/macos from git..."
+echo "Checking out jhbuild from git..."
 if ! test -d $SOURCE/jhbuild; then
-    (cd $SOURCE ; git clone -b wip/ptomato/macos git://git.gnome.org/jhbuild )
+    (cd $SOURCE ; git clone git://git.gnome.org/jhbuild )
 else
-    (cd $SOURCE/jhbuild ; git pull >/dev/null ; git ch wip/ptomato/macos >/dev/null)
+    (cd $SOURCE/jhbuild ; git pull >/dev/null)
 fi
 
 echo "Installing jhbuild..."
