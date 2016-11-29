@@ -30,8 +30,3 @@ For `meta-gnome-extended-devel-platform`:
 - libpeas: https://bugzilla.gnome.org/show_bug.cgi?id=774175
 - libsecret: https://bugzilla.gnome.org/show_bug.cgi?id=734630
 - gnome-online-accounts: We are stuck on an older version of WebKit for now; both uses of `webkit_dom_dom_window_webkit_message_handlers_post_message()` in `src/goabackend/goawebextension.c` need to be commented out
-
-Other:
-- gcab:
-  - https://bugzilla.gnome.org/show_bug.cgi?id=774342
-  - https://bugzilla.gnome.org/show_bug.cgi?id=708257
