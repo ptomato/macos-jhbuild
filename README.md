@@ -22,9 +22,6 @@ Temporary repository with the necessary configuration to build GNOME modulesets 
 - `jhbuild build`
 
 ### Modules that currently need patches or changes ###
-For `meta-gnome-devel-platform`:
-- gtk+: https://bugzilla.gnome.org/show_bug.cgi?id=772281
-
 For `meta-gnome-extended-devel-platform`:
 - pygobject: https://bugzilla.gnome.org/show_bug.cgi?id=773803
 - libpeas: https://bugzilla.gnome.org/show_bug.cgi?id=774175
