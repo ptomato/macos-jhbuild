@@ -17,7 +17,7 @@
   <repository name="hadess" type="tarball"
               href="http://freedesktop.org/~hadess/"/>
   <repository name="icu" type="tarball"
-              href="http://download.icu-project.org/files/"/>
+              href="https://ssl.icu-project.org/files/"/>
   <repository name="itstool" type="tarball"
               href="http://files.itstool.org/itstool/"/>
   <repository name="json" type="tarball"
@@ -284,7 +284,7 @@
   <autotools id="libicu" autogen-sh="source/configure"
              autogenargs="--enable-rpath">
     <pkg-config>icu-i18n.pc</pkg-config>
-    <branch repo="icu" module="icu4c/55.1/icu4c-55_1-src.tgz" version="55.1"
+    <branch repo="icu" module="icu4c/59.1/icu4c-59_1-src.tgz" version="59.1"
             checkoutdir="icu"/>
   </autotools>
 
