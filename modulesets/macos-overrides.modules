@@ -11,9 +11,9 @@
   <!-- macOS is unlikely to have a Vala compiler available for bootstrapping
   from git -->
   <autotools id="vala">
-    <branch repo="gnome-tarballs" module="vala/0.34/vala-0.34.2.tar.xz"
-            version="0.34.2"
-            hash="sha256:765e9c2b429a66db93247940f8588319b43f35c173d057bcae5717a97d765c41"/>
+    <branch repo="gnome-tarballs" module="vala/0.36/vala-0.36.1.tar.xz"
+            version="0.36.1"
+            hash="sha256:13f4a3f99d983bf76e8d9dd736021ecc95f53ec1f9582423aa4b4be87455aa07"/>
   </autotools>
 
   <!-- This is the latest release of WebKitGTK known to work on macOS.
@@ -24,21 +24,14 @@
     ENABLE_OPENGL: Untested.
   -->
   <cmake id="WebKit"
-         cmakeargs="-DPORT=GTK -DCMAKE_BUILD_TYPE=Release -DENABLE_X11_TARGET=OFF -DENABLE_QUARTZ_TARGET=ON -DENABLE_MINIBROWSER=ON -DENABLE_PLUGIN_PROCESS_GTK2=OFF -DENABLE_OPENGL=OFF -DCMAKE_CXX_FLAGS='-stdlib=libc++'">
+         cmakeargs='-DPORT=GTK -DCMAKE_BUILD_TYPE=Release -DENABLE_X11_TARGET=OFF -DENABLE_QUARTZ_TARGET=ON -DENABLE_MINIBROWSER=ON -DENABLE_PLUGIN_PROCESS_GTK2=OFF -DENABLE_OPENGL=OFF -DCMAKE_CXX_FLAGS="$CXXFLAGS -stdlib=libc++"'>
     <pkg-config>webkit2gtk-4.0.pc</pkg-config>
-    <branch repo="webkit" module="webkitgtk-2.10.2.tar.xz" version="2.10.2">
-      <patch file="https://git.gnome.org/browse/gtk-osx/plain/patches/webkit-144561-quartz-backend.patch"
+    <branch repo="webkit" module="webkitgtk-2.16.1.tar.xz" version="2.16.1">
+      <patch file="WebKit-2.16.1-Bug-167343-wtf-unicode-UTF8.h.patch" strip="1"/>
+      <patch file="https://git.gnome.org/browse/gtk-osx/plain/patches/Webkit-2.16-build-without-OpenGL.patch"
              strip="1"/>
-      <patch file="https://git.gnome.org/browse/gtk-osx/plain/patches/webkit-144560-platform-fixes.patch"
+      <patch file="https://git.gnome.org/browse/gtk-osx/plain/patches/Webkit-2.16-Fix-some-includes.patch"
              strip="1"/>
-      <patch file="https://git.gnome.org/browse/gtk-osx/plain/patches/webkit-144785-link-injected-bundle.patch"
-             strip="1"/>
-      <patch file="https://git.gnome.org/browse/gtk-osx/plain/patches/webkit-148606-build-texture-mapper-gl-separately.patch"
-             strip="1"/>
-      <patch file="https://git.gnome.org/browse/gtk-osx/plain/patches/webkit-148607-include-stub-for-plugin-permission-request.patch"
-             strip="1"/>
-      <patch file="WebKit-150030-Fix-WebAudio-build.patch" strip="1"/>
-      <patch file="WebKit-150500-disable-OBJC-JSC-API.patch" strip="1"/>
     </branch>
     <dependencies>
       <dep package="c++"/>

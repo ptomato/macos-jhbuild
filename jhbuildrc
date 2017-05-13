@@ -33,13 +33,24 @@ def osx_ver():
 
 # Determine the XCode Version:
 def xcode_ver():
-   ver = _popen('xcodebuild -version')
-   exp = re.compile(r'Xcode (\d+\.\d+)')
-   vernum = exp.match(ver)
-   if vernum:
-       return float(vernum.group(1))
-   else:
-       return 3.0
+    devdir = _popen('xcode-select -p')
+    if devdir != '/Library/Developer/CommandLineTools':
+        ver = _popen('xcodebuild -version')
+        exp = re.compile(r'Xcode (\d+\.\d+)')
+        vernum = exp.match(ver)
+        if vernum:
+            _xcode_ver = float(vernum.group(1))
+            if _xcode_ver < 5.0:
+                raise EnvironmentError('Xcode Version %f is not supported. Xcode 5.0 or later is required.' % _xcode_ver)
+            return _xcode_ver
+        raise EnvironmentError('No suitable Xcode found. Xcode 5.0 or later is required.')
+    else:  # Command-Line Tools instead of Xcode
+        ver_str = _popen('pkgutil --pkg-info=com.apple.pkg.CLTools_Executables | grep version*')
+        exp = re.compile(r'version: (\d+\.\d+)')
+        vernum = exp.match(ver_str)
+        if vernum:
+            return float(vernum.group(1))
+        return 8.0
 
 # Some utility functions used here and in custom files:
 
@@ -90,97 +101,65 @@ def setup_release():
     environ_prepend('CXXFLAGS', '-O2')
     environ_prepend('OBJCFLAGS', '-O2')
 
-def make_sdk_name(sdk_version):
-    return 'MacOSX' + sdk_version + '.sdk'
-
-def get_sdkdir(sdk_name, xcodepath, xcodeversion):
-    platformpath = None
-    if xcodeversion >= 4.3:
-        platformpath = os.path.join('Platforms', 'MacOSX.platform', 'Developer')
-    if xcodepath and platformpath:
-        sdkdir = os.path.join(xcodepath, platformpath, 'SDKs', sdk_name)
-    elif xcodepath:
-        sdkdir = os.path.join(xcodepath, 'SDKs', sdk_name)
-    else:
-        sdkdir = os.path.join('/Developer', 'SDKs', sdk_name)
-
-    if not os.path.exists(sdkdir):
-        sdkdir = ''
-        if 'SDKPATH' in os.environ:
-            try:
-                sdkdir = [os.path.join(path, sdk_name) for path
-                          in os.environ['SDKPATH'].split(':')
-                          if os.path.exists(os.path.join(path, sdk_name))][0]
-            except IndexError:
-                pass
-        if not sdkdir:
-            raise EnvironmentError('%s not found' % sdk_name)
-    return sdkdir
-
 # Set up the environment for building against particular SDK.
-# This is the workhorse of the setup. Call this function with the
-# target OSX version (10.9, 10.10, 10.11, etc.), and the sdk version you want
-# to use (10.9, 10.10, 10.11, etc.).
-def setup_sdk(target=None, sdk_version='native'):
+# This is the workhorse of the setup. Call this function from
+# .jhbuildrc-custom to configure compile and link flags. Optionally
+# specify a minimum MacOS version (10.9, 10.10, 10.11, etc.)
+#
+# For most users accepting the defaults is the right course.
+def setup_sdk(target=None):
     xcodeversion = xcode_ver()
     osx_version = osx_ver()
 
     if target is None:
         target = '10.%d' % osx_version
-    # OSX 10.9 doesn't have /usr/include, so we need to set the sdkdir to XCode.app:
-    if sdk_version == 'native':
-        sdk_version = '10.%d' % osx_version
 
     os.environ['MACOSX_DEPLOYMENT_TARGET'] = target
 
-    # Note: You can use $DEVELOPER_DIR to override the default set with
-    # xcode-select.
-    xcodepath = _popen('xcode-select -print-path')
-    if os.environ.has_key('DEVELOPER_DIR'):
-        xcodepath = os.environ['DEVELOPER_DIR']
+    sdkdir = _popen('xcrun --show-sdk-path')
 
-    toolpath = os.path.join('/usr', 'bin')
-    if xcodepath:
-        toolpath = os.path.join(xcodepath, 'usr', 'bin')
+    if sdkdir:
+        sdk_includedir = os.path.join(sdkdir, 'usr', 'include')
+        sdk_libdir = os.path.join(sdkdir, 'usr', 'lib')
 
-    sdkdir = get_sdkdir(make_sdk_name(sdk_version), xcodepath, xcodeversion)
-    sdk_includedir = os.path.join(sdkdir, 'usr', 'include')
-    # Seems like we need this since many libraries otherwise only look for
-    # various dependencies (e.g. libiconv) in /usr/lib, hence pulling in
-    # the wrong -L
-    environ_prepend('LDFLAGS', '-L' + sdkdir + '/usr/lib')
-    environ_prepend('CFLAGS', '-I' + sdk_includedir)
-    environ_prepend('CXXFLAGS', '-I' + sdk_includedir)
-    environ_prepend('OBJCFLAGS', '-I' + sdk_includedir)
-    environ_prepend('CPPFLAGS', '-I' + sdk_includedir)
-    environ_prepend('CMAKE_PREFIX_PATH', os.path.join(sdkdir, 'usr'), ':')
-    environ_prepend('LIBRARY_PATH', sdkdir + '/usr/lib', ':')
+        environ_prepend('LDFLAGS', '-L' + sdk_libdir)
+        environ_prepend('CFLAGS', '-I' + sdk_includedir)
+        environ_prepend('CXXFLAGS', '-I' + sdk_includedir)
+        environ_prepend('OBJCFLAGS', '-I' + sdk_includedir)
+        environ_prepend('CPPFLAGS', '-I' + sdk_includedir)
+        environ_prepend('CMAKE_PREFIX_PATH', os.path.join(sdkdir, 'usr'), ':')
+        environ_prepend('LIBRARY_PATH', sdk_libdir, ':')
 
-    # It's often necessary to look for things in the SDK when
-    # developing, and it takes a lot of typing, so define a
-    # convenience environment variable:
-    environ_append('SDKDIR', sdkdir)
-    environ_append('SDKROOT', sdkdir)
+        # It's often necessary to look for things in the SDK when
+        # developing, and it takes a lot of typing, so define a
+        # convenience environment variable:
+        environ_append('SDKDIR', sdkdir)
+        environ_append('SDKROOT', sdkdir)
 
-    # Apple Documentation says that "-syslibroot" is the arg to pass to the
-    # linker, but we are using the compiler to control the linker, and
-    # everything seems to be working correctly.
-    environ_append('CFLAGS', '-isysroot ' + sdkdir)
-    environ_append('CPPFLAGS', '-isysroot ' + sdkdir)
-    environ_append('CXXFLAGS', '-isysroot ' + sdkdir)
-    environ_append('OBJCFLAGS', '-isysroot ' + sdkdir)
-    environ_append('LDFLAGS', '-isysroot ' + sdkdir)
+        # Apple Documentation says that "-syslibroot" is the arg to pass to the
+        # linker, but we are using the compiler to control the linker, and
+        # everything seems to be working correctly.
+        environ_append('CFLAGS', '-isysroot ' + sdkdir)
+        environ_append('CPPFLAGS', '-isysroot ' + sdkdir)
+        environ_append('CXXFLAGS', '-isysroot ' + sdkdir)
+        environ_append('OBJCFLAGS', '-isysroot ' + sdkdir)
+        environ_append('LDFLAGS', '-isysroot ' + sdkdir)
+
+        # To pick up cups-config from the right place.
+        os.environ['CUPS_CONFIG'] = os.path.join(sdkdir, 'usr', 'bin', 'cups-config')
 
     environ_append('CFLAGS', '-mmacosx-version-min=' + target)
     environ_append('CXXFLAGS', '-mmacosx-version-min=' + target)
     environ_append('OBJCFLAGS', '-mmacosx-version-min=' + target)
     environ_append('LDFLAGS', '-mmacosx-version-min=' + target)
 
-    # Note that the following will use Clang
-    os.environ['CC'] = os.path.join(toolpath, 'gcc')
-    os.environ['OBJC'] = os.path.join(toolpath, 'gcc')
-    os.environ['CXX'] = os.path.join(toolpath, 'g++')
-    os.environ['LD'] = os.path.join(toolpath, 'ld')
+    gcc = _popen('xcrun -f gcc')
+    gpp = _popen('xcrun -f g++')
+    ld = _popen('xcrun -f ld')
+    os.environ['CC'] = gcc
+    os.environ['OBJC'] = gcc
+    os.environ['CXX'] = gpp
+    os.environ['LD'] = ld
 
     # El Capitan needs bash to work around SIP. If you're using a
     # common bootstrap directory (e.g. $HOME/.local) then override
@@ -188,9 +167,13 @@ def setup_sdk(target=None, sdk_version='native'):
     config_shell = os.path.join(prefix, 'bin', 'bash')
     if osx_version < 11.0:
         skip.append('bash')
-        skip.append('openssl')  # openssl removed in El Capitan
     elif os.path.exists(config_shell):
         os.environ['CONFIG_SHELL'] = config_shell
+
+    if not sdkdir:
+        sdkdir = '/'
+    if os.path.exists(os.path.join(sdkdir, 'usr', 'include', 'openssl')):
+        skip.append('openssl')  # openssl removed in El Capitan
 
     # macOS ships libuuid, but no pkg-config file. Symbols are in libSystem, per
     # http://lists.apple.com/archives/unix-porting/2009/Aug/msg00006.html
