@@ -251,9 +251,6 @@ append_autogenargs('gnutls', '--host=x86_64-apple-darwin')
 # Need to override the global autogenargs for libnettle, since otherwise
 # --disable-static will be added after it
 module_autogenargs['libnettle'] = '--enable-static'
-# https://bugs.freedesktop.org/show_bug.cgi?id=98603
-# https://bugs.freedesktop.org/show_bug.cgi?id=98698
-branches['pulseaudio'] = (None, 'next')
 
 ###### Import Customizations ######
 
