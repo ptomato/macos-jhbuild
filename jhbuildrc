@@ -277,6 +277,10 @@ module_extra_env['openssl'] = {
 # This is how to get cmake to set -install_name
 cmakeargs += ' -DCMAKE_INSTALL_NAME_DIR=' + _libdir
 
+# Find our docbook XML catalogs
+os.environ['XML_CATALOG_FILES'] = os.path.join(prefix, 'share', 'xml',
+    'catalog')
+
 # Overcome Python's obnoxious misconfiguration of portable builds
 os.environ['BUILDCFLAGS'] = os.environ['CFLAGS']
 # Finally when building normally we need to force CFLAGS_FOR_BUILD
