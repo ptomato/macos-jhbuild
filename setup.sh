@@ -45,4 +45,10 @@ for mod in modulesets/*.modules patches/*.patch; do
     ln -sfh `pwd`/$mod $SOURCE/jhbuild/$mod
 done
 
+echo "Replacing jhbuild's python symlink..."
+rm ~/.local/bin/python2
+echo '#!/bin/bash' >~/.local/bin/python2
+echo 'exec /usr/bin/python "$@"' >>~/.local/bin/python2
+chmod +x ~/.local/bin/python2
+
 echo "Done."

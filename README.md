@@ -28,9 +28,3 @@ For `meta-gnome-extended-devel-platform`:
 - pygobject: https://bugzilla.gnome.org/show_bug.cgi?id=773803
 - libpeas: https://bugzilla.gnome.org/show_bug.cgi?id=774175
 - libsecret: https://bugzilla.gnome.org/show_bug.cgi?id=734630
-
-### Troubleshooting ###
-- `python2: realpath couldn't resolve "/usr/bin/python2"` error
-  - `rm ~/.local/bin/python2`
-  - Edit `~/.local/bin/python2` as in [this Stack Exchange answer](https://unix.stackexchange.com/a/126567)
-  - `chmod +x ~/.local/bin/python2`
