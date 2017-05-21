@@ -22,9 +22,10 @@
     ENABLE_PLUGIN_PROCESS_GTK2: Requires both GTK 2.x and 3.x. Currently not
       supported.
     ENABLE_OPENGL: Untested.
+    UCHAR_TYPE: https://bugs.webkit.org/show_bug.cgi?id=101179
   -->
   <cmake id="WebKit"
-         cmakeargs='-DPORT=GTK -DCMAKE_BUILD_TYPE=Release -DENABLE_X11_TARGET=OFF -DENABLE_QUARTZ_TARGET=ON -DENABLE_MINIBROWSER=ON -DENABLE_PLUGIN_PROCESS_GTK2=OFF -DENABLE_OPENGL=OFF -DCMAKE_CXX_FLAGS="$CXXFLAGS -stdlib=libc++"'>
+         cmakeargs='-DPORT=GTK -DCMAKE_BUILD_TYPE=Release -DENABLE_X11_TARGET=OFF -DENABLE_QUARTZ_TARGET=ON -DENABLE_MINIBROWSER=ON -DENABLE_PLUGIN_PROCESS_GTK2=OFF -DENABLE_OPENGL=OFF -DCMAKE_CXX_FLAGS="$CXXFLAGS -DUCHAR_TYPE=uint16_t -stdlib=libc++"'>
     <pkg-config>webkit2gtk-4.0.pc</pkg-config>
     <branch repo="webkit" module="webkitgtk-2.16.1.tar.xz" version="2.16.1">
       <patch file="WebKit-2.16.1-Bug-167343-wtf-unicode-UTF8.h.patch" strip="1"/>
@@ -32,6 +33,7 @@
              strip="1"/>
       <patch file="https://git.gnome.org/browse/gtk-osx/plain/patches/Webkit-2.16-Fix-some-includes.patch"
              strip="1"/>
+      <patch file="WebKit-harfbuzz-char16.patch" strip="1"/>
     </branch>
     <dependencies>
       <dep package="c++"/>

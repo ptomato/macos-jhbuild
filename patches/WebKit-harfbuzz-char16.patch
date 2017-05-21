@@ -1,0 +1,11 @@
+--- a/Source/WebCore/platform/graphics/harfbuzz/HarfBuzzShaper.cpp	2017-05-16 10:18:56.000000000 -0700
++++ b/Source/WebCore/platform/graphics/harfbuzz/HarfBuzzShaper.cpp	2017-05-16 10:28:15.000000000 -0700
+@@ -276,7 +276,7 @@
+         sourceText = runCharacters;
+     } else {
+         m_normalizedBufferLength = normalizedString.length();
+-        sourceText = normalizedString.getBuffer();
++        sourceText = reinterpret_cast<const UChar*>(normalizedString.getBuffer());
+     }
+ 
+     m_normalizedBuffer = std::make_unique<UChar[]>(m_normalizedBufferLength + 1);
