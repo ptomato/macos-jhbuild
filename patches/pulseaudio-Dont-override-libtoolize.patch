@@ -1,0 +1,21 @@
+https://cgit.freedesktop.org/pulseaudio/pulseaudio/commit/?id=4bc753238f5775c23e2abd337e6372cfb7411fb8
+On master branch
+
+diff --git a/bootstrap.sh b/bootstrap.sh
+index 187abaa..57494fc 100755
+--- a/bootstrap.sh
++++ b/bootstrap.sh
+@@ -15,13 +15,6 @@
+ # You should have received a copy of the GNU Lesser General Public License
+ # along with PulseAudio; if not, see <http://www.gnu.org/licenses/>.
+ 
+-case $(uname) in
+-	*Darwin*)
+-		LIBTOOLIZE="glibtoolize"
+-		;;
+-esac
+-test "x$LIBTOOLIZE" = "x" && LIBTOOLIZE=libtoolize
+-
+ if [ -f .git/hooks/pre-commit.sample -a ! -f .git/hooks/pre-commit ] ; then
+     cp -p .git/hooks/pre-commit.sample .git/hooks/pre-commit && \
+     chmod +x .git/hooks/pre-commit && \

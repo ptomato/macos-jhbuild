@@ -196,7 +196,7 @@ if os.environ.get('JHBUILD_PREFIX', '') != '':
 # Moduleset to use. You can override this in .jhbuildrc-custom or on
 # the command line.
 moduleset = [
-    'gnome-apps-3.22',
+    'gnome-apps-3.24',
     'macos-sysdeps',
     'macos-overrides',
 ]
@@ -234,6 +234,17 @@ append_autogenargs('gnutls', '--host=x86_64-apple-darwin')
 # Need to override the global autogenargs for libnettle, since otherwise
 # --disable-static will be added after it
 module_autogenargs['libnettle'] = '--enable-static'
+
+# Berkeley DB version shipped with macOS has a different API; C++11 required
+# because of linking to ICU; and the Vala bindings are just an e-d-s build
+# bug, apparently.
+module_cmakeargs['evolution-data-server'] = \
+    '-DWITH_LIBDB=NO -DENABLE_VALA_BINDINGS=OFF -DCMAKE_CXX_FLAGS="-std=c++11"'
+
+# Built python doesn't have ssl, we need system Python to set up virtualenv
+module_extra_env['mozjs38'] = {
+    'PYTHON': '/usr/bin/python2.7',
+}
 
 ###### Import Customizations ######
 

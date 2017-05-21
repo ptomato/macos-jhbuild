@@ -190,24 +190,6 @@
     </dependencies>
   </autotools>
 
-  <autotools id="js24" autogen-sh="configure"
-             autogenargs="--with-system-nspr --with-system-zlib --enable-system-ffi --enable-threadsafe">
-    <pkg-config>mozjs-24.pc</pkg-config>
-    <branch repo="mozilla" module="js/mozjs-24.2.0.tar.bz2" version="24.2.0"
-            checkoutdir="js24-24.2.0" source-subdir="js/src"
-            hash="sha1:ce779081cc11bd0c871c6f303fc4a0091cf4fe66">
-      <patch file="js24-install-name.patch" strip="1"/>
-    </branch>
-    <dependencies>
-      <dep package="libffi"/>
-      <dep package="nspr"/>
-    </dependencies>
-    <after>
-      <dep package="python2"/>
-      <dep package="zlib"/>
-    </after>
-  </autotools>
-
   <autotools id="json" autogen-sh="configure">
     <pkg-config>json-c.pc</pkg-config>
     <branch repo="json" module="json-c-0.12.1-nodoc.tar.gz" version="0.12.1"
@@ -437,6 +419,25 @@
     </branch>
     <dependencies>
       <dep package="libtasn1"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="pulseaudio" autogen-sh="bootstrap.sh"
+             supports-non-srcdir-builds="no"
+             autogenargs="--disable-hal --disable-oss-output --disable-esound --disable-gconf --disable-gtk3 --disable-bluez4 --disable-bluez5 --disable-alsa --disable-avahi --with-preopen-mods=">
+    <branch repo="freedesktop"
+            module="pulseaudio/releases/pulseaudio-10.0.tar.xz" version="10.0"
+            hash="sha1:ab7cc41a2dc2b9da0794e3a51a4eb7e82e7da511">
+      <patch file="pulseaudio-Move-TLS-check-after-flags-additions.patch" strip="1"/>
+      <patch file="pulseaudio-Dont-override-libtoolize.patch" strip="1"/>
+    </branch>
+    <dependencies>
+      <dep package="dbus"/>
+      <dep package="json"/>
+      <dep package="libsndfile"/>
+      <dep package="libtool-ltdl"/>
+      <dep package="glib"/>
+      <dep package="speex"/>
     </dependencies>
   </autotools>
 
