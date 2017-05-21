@@ -51,4 +51,9 @@ echo '#!/bin/bash' >~/.local/bin/python2
 echo 'exec /usr/bin/python "$@"' >>~/.local/bin/python2
 chmod +x ~/.local/bin/python2
 
+echo "Installing ninja..."
+curl -LO https://github.com/ninja-build/ninja/releases/download/v1.7.2/ninja-mac.zip
+unzip -o ninja-mac.zip ninja -d ~/.local/bin
+rm ninja-mac.zip
+
 echo "Done."
