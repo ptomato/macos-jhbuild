@@ -442,6 +442,7 @@
 
   <waf id="py3cairo" python-command="python3">
     <pkg-config>py3cairo.pc</pkg-config>
+    <!-- 1.12 series changes pkg-config name to pycairo -->
     <branch repo="cairographics" module="pycairo-1.10.0.tar.bz2"
             version="1.10.0"
             hash="sha1:b4283aa1cc9aafd12fd72ad371303a486da1d014"/>
