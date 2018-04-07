@@ -346,9 +346,7 @@
     </dependencies>
   </autotools>
 
-  <!-- errors out on unknown configure args -->
-  <autotools id="libvpx"
-             autogen-template="%(srcdir)s/configure --prefix=%(prefix)s">
+  <autotools id="libvpx" supports-unknown-configure-options="no">
     <pkg-config>vpx.pc</pkg-config>
     <branch repo="webm" module="webm/libvpx-1.6.0.tar.bz2" version="1.6.0"/>
   </autotools>
@@ -398,14 +396,14 @@
   </autotools>
 
   <!-- of the many arguments such as prefix and libdir that jhbuild might pass
-  to configure, openssl only understands prefix, and only with =. Sadly we
-  cannot pass things in through %(autogenargs)s, as disable-Werror will be
-  prepended to them. -->
+  to configure, openssl only understands prefix, and only with =. -->
   <!-- Unfortunately Python2 hasn't been fixed up to use the 1.1 API
   so we're stuck at 1.0. -->
   <autotools id="openssl" autogen-sh="Configure"
-             autogen-template="%(srcdir)s/%(autogen-sh)s --prefix=%(prefix)s --openssldir=%(prefix)s/etc/ssl shared darwin64-x86_64-cc"
-             makeinstallargs="install_sw" supports-non-srcdir-builds="no">
+             autogen-template="%(srcdir)s/%(autogen-sh)s --prefix=%(prefix)s --openssldir=%(prefix)s/etc/ssl %(autogenargs)s"
+             autogenargs="shared darwin64-x86_64-cc"
+             makeinstallargs="install_sw" supports-non-srcdir-builds="no"
+             supports-unknown-configure-options="no">
     <pkg-config>libcrypto.pc</pkg-config>
     <branch repo="openssl" module="openssl-1.0.2k.tar.gz" version="1.0.2k"
             hash="sha256:6b3977c61f2aedf0f96367dcfb5c6e578cf37e7b8d913b4ecb6643c3cb88d8c0"/>
@@ -500,8 +498,7 @@
   </autotools>
 
   <autotools id="zlib" autogen-sh="configure" supports-non-srcdir-builds="no"
-             autogen-template="%(srcdir)s/%(autogen-sh)s --prefix %(prefix)s">
-    <!-- doesn't handle disable-Werror, so have to cut out autogenargs -->
+             supports-unknown-configure-options="no">
     <pkg-config>zlib.pc</pkg-config>
     <branch repo="sourceforge" module="libpng/zlib-1.2.8.tar.gz"
             version="1.2.8"/>
