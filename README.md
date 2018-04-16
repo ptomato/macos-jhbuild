@@ -14,11 +14,12 @@ Temporary repository with the necessary configuration to build GNOME modulesets 
 - Make sure `~/.local/bin` is in your `PATH`
 - Edit `~/.jhbuildrc-custom` as desired
 - If you intend to make app bundles you must temporarily unlink your Homebrew modules until you're done building: `brew list -1 | while read line; do brew unlink $line; done` (ask `brew doctor` how to get them back)
-- `jhbuild bootstrap`
+- `jhbuild bootstrap` (if on macOS 10.13, add `--skip=bison`)
 - `cd` to your install directory (whatever you put as `prefix` in `~/.jhbuildrc-custom`)
 - `cp _jhbuild/root-dbus-broken/Library/LaunchAgents/org.freedesktop.dbus-session.plist ~/Library/LaunchAgents/`
 - `rm -r _jhbuild/root-dbus-broken`
 - `jhbuild run dbus-uuidgen --ensure=var/lib/dbus/machine-id`
+- `jhbuild build bison` if on macOS 10.13
 - `jhbuild sysdeps` and make sure nothing looks odd
 - `jhbuild list` and make sure nothing looks odd
 - `jhbuild build`

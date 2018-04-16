@@ -7,6 +7,9 @@
               href="http://ftp.gnome.org/pub/GNOME/sources/"/>
   <repository name="webkit" type="tarball"
               href="http://www.webkitgtk.org/releases/"/>
+  <repository name="savannah" type="git"
+              href="https://git.savannah.gnu.org/git/"/>
+  <repository name="ftp.gnu.org" type="tarball" href="http://ftp.gnu.org/gnu/"/>
 
   <!-- macOS is unlikely to have a Vala compiler available for bootstrapping
   from git -->
@@ -14,6 +17,21 @@
     <branch repo="gnome-tarballs" module="vala/0.36/vala-0.36.1.tar.xz"
             version="0.36.1"
             hash="sha256:13f4a3f99d983bf76e8d9dd736021ecc95f53ec1f9582423aa4b4be87455aa07"/>
+  </autotools>
+
+  <!-- bug in Bison on macOS 10.13, fixed in git:
+       http://lists.gnu.org/archive/html/bug-bison/2017-09/msg00001.html -->
+  <autotools id="bison" autogen-sh="configure" supports-non-srcdir-builds="no"
+             autogen-template="%(srcdir)s/bootstrap &amp;&amp; %(srcdir)s/%(autogen-sh)s --prefix %(prefix)s %(autogenargs)s">
+    <branch repo="savannah" module="bison" revision="maint"/>
+    <dependencies>
+      <dep package="help2man"/>
+    </dependencies>
+  </autotools>
+
+  <autotools id="help2man" autogen-sh="configure">
+    <branch repo="ftp.gnu.org" module="help2man/help2man-1.47.6.tar.xz"
+            version="1.47.6"/>
   </autotools>
 
   <!-- This is the latest release of WebKitGTK known to work on macOS.
